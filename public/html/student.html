@@ -1,0 +1,96 @@
+<script>
+
+  /* ****************************************************** */
+  var SearchStudent = function(sSearch) {
+// откроем модальное окно
+    $('#dwait').dialog('open');
+// создадим объект FormData
+    var formData = new FormData();
+// передадим на сервер значение поля с именем searchstr
+    formData.append("searchstr", sSearch);
+// выполним асинхронный запрос POST
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/searchstudent");
+    xhr.onload = function(e)
+    {
+      if(this.readyState == 4 && this.status == 200)
+      {
+        var sAux = this.response;
+        var aAux = sAux.split('####');
+// проверяем, если есть проблемы с входом в сессию,
+// если есть, переходим на страницу аутентификации
+        if(aAux[0] == "0") {
+          if(aAux[1] == '/') { window.location.href = '/logout'; }
+        }
+        $('#idserverresponse1').html(sAux);
+        $('#dwait').dialog('close');
+        return false;
+      }
+      else
+      {
+        alert("Err!");
+      }
+      return false;
+    };
+    xhr.send(formData);
+    return false;
+  };
+  /* ****************************************************** */
+  // заносим в плавающее окно (оно справа вверху) ФИО выбранного
+  // студента, id студента необходимо также хранить
+  // для этого используем поле типа hidden
+  var ChooseStudent = function(nStudentID, sFIO) {
+    document.getElementById('floatstudentid').value = nStudentID.toString();
+    document.getElementById('floatstudentinfo').innerHTML = sFIO;
+    return false;
+  };
+</script>
+<!-- определяем внешний вид окна id="dwait" -->
+<script>
+  $( function() {
+    $( "#dwait" ).dialog({
+      autoOpen: false,
+      resizable: false,
+      height: "auto",
+      width: 200,
+      modal: true,
+      closeText: "hide",
+      closeOnEscape: false
+    });
+  });
+</script>
+<!-- создадим форму содержащую поисковую строку и кнопку Поиск -->
+<div class="container mt-3">
+  <form method="POST" class="form" enctype="multipart/form-data">
+    <div class="input-group mb-3 w-50">
+      <input type="text" id="idsearchstudent" class="form-control" placeholder=""
+             aria-describedby="basic-addon2" onKeyUp="
+ idsearchstudent.value = idsearchstudent.value.trimLeft();
+ if(idsearchstudent.value.length < 3) { return false; }
+ SearchStudent(idsearchstudent.value);
+ return false;
+ ">
+      <div class="input-group-append">
+        <button class="btn btn-primary"
+                onClick="SearchStudent(idsearchstudent.value); return false;">Поиск</button>
+      </div>
+    </div>
+  </form>
+  <div id="idserverresponse1" style="width:100%;overflow-y:auto;margintop:3pt;border:1px solid #dddddd;">
+  </div>
+</div>
+<script>
+  // устанавливаем адаптивную высоту окна
+  // в котором отображаются данные о студентах
+  document.getElementById('idserverresponse1').style.height =
+          (window.innerHeight-165)+'px';
+  document.getElementById('idserverresponse1').style.maxHeight =
+          (window.innerHeight-165)+'px';
+</script>
+<div id="dwait" title="Сообщение">
+  <p>Ждите...</p>
+</div>
+<script>
+  // удаляем кнопку окна "Сообщение", чтобы окно нельзя было закрыть
+  $("#dwait").dialog('widget').find(".ui-dialog-titlebar-close").hide();
+</script>

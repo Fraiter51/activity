@@ -1,0 +1,114 @@
+<script>
+
+  /* ****************************************************** */
+  var SearchСonference = function(sConfname, sConfcity,
+                                  sConfdatestart, sConfdateend) {
+// откроем модальное окно
+    $('#dwait').dialog('open');
+// если студент выбран, у него id не пустой
+    var sStudentid = document.getElementById('floatstudentid').value;
+// создадим объект FormData
+    var formData = new FormData();
+// передадим значение полей на сервер
+    formData.append("studentid", sStudentid);
+    formData.append("confname", sConfname);
+    formData.append("confcity", sConfcity);
+    formData.append("confdatestart", sConfdatestart);
+    formData.append("confdateend", sConfdateend);
+// выполним асинхронный запрос POST
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/searchconference");
+    xhr.onload = function(e)
+    {
+      if(this.readyState == 4 && this.status == 200)
+      {
+        var sAux = this.response;
+        var aAux = sAux.split('####');
+// проверяем, если есть проблемы с входом в сессию,
+// если есть, переходим на страницу аутентификации
+        if(aAux[0] == "0") {
+          if(aAux[1] == '/') { window.location.href = '/logout'; }
+        }
+        $('#idserverresponse2').html(sAux);
+        $('#dwait').dialog('close');
+        return false;
+      }
+      else
+      {
+        alert("Err!");
+      }
+      return false;
+    };
+    xhr.send(formData);
+    return false;
+  };
+</script>
+<!-- определяем внешний вид окна id="dwait" -->
+<script>
+  $( function() {
+    $( "#dwait" ).dialog({
+      autoOpen: false,
+      resizable: false,
+      height: "auto",
+      width: 200,
+      modal: true,
+      closeText: "hide",
+      closeOnEscape: false
+    });
+  });
+</script>
+<!-- создадим форму содержащую поля ввода и кнопку Поиск -->
+<div class="container mt-3">
+  <form method="POST" enctype="multipart/form-data" style="margin-top:-15pt;">
+    <div class="form-row">
+      <div class="form-group col-md-3">
+        <label for="confname">Название конференции</label>
+        <input type="text" class="form-control" id="confname" onKeyUp="
+ confname.value = confname.value.trimLeft();
+ if(confname.value.length < 3) { return false; }
+ SearchСonference(confname.value, confcity.value, confdatestart.value,
+confdateend.value);
+ return false;
+ ">
+      </div>
+      <div class="form-group col-md-3">
+        <label for="confcity">Город</label>
+        <select id="confcity" class="form-control">
+        </select>
+      </div>
+      <div class="form-group col-md-2">
+        <label for="confdatestart">Дата с</label>
+        <input type="date" max="3000-12-31" min="1000-01-01" class="formcontrol" id="confdatestart">
+      </div>
+      <div class="form-group col-md-2">
+        <label for="confdateend">Дата по</label>
+        <input type="date" max="3000-12-31" min="1000-01-01" class="formcontrol" id="confdateend">
+      </div>
+      <div class="form-group col-md-2">
+        <button class="btn btn-primary mb-2" style="margin-top:32px;float:right;"
+                onClick="SearchСonference(confname.value,
+confcity.value, confdatestart.value, confdateend.value); return
+false;">Поиск</button>
+      </div>
+    </div>
+  </form>
+  <div id="idserverresponse2" style="width:100%;overflow-y:auto;margin-top:-5pt; border: 1px solid #dddddd; ">
+  </div>
+</div>
+<script>
+  // устанавливаем адаптивную высоту окна
+  // в котором отображаются данные о конференциях
+  document.getElementById('idserverresponse2').style.height =
+          (window.innerHeight-178)+'px';
+  document.getElementById('idserverresponse2').style.maxHeight =
+          (window.innerHeight-178)+'px';
+</script>
+<div id="dwait" title="Сообщение">
+  <p>Ждите...</p>
+</div>
+<script>
+  // удаляем кнопку окна "Сообщение", чтобы окно нельзя было закрыть
+  $("#dwait").dialog('widget').find(".ui-dialog-titlebar-close").hide();
+  // загрузка справочника списка городов
+  CityClassifier(1, 'confcity');
+</script>

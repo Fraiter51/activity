@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Регистрация</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="public/css/login.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+</head>
+<body>
+<div class="login-page">
+    <!-- Ошибка в имени или пароле -->
+    {{if .LoginError}}<p style="color:red">Имя и пароль не найдены!</p>{{end}}
+    <form method="post" id="formlogin" class="form" action="/login">
+        {{if .Username}}
+        <p><b>{{.Username}}</b>, you're already logged in! <a
+                href="/logout">Logout!</a></p>
+        {{else}}
+        <input type="text" name="Username" placeholder="имя"><br>
+        <input type="password" name="Password" placeholder="пароль">
+        <input type="hidden" name="Login" value="Let me in!"><br>
+        <button type="button"
+                onclick="document.getElementById('formlogin').submit();">Login</button></br
+            >
+        {{end}}
+    </form>
+</div>
+</body>
+</html>

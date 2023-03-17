@@ -1,0 +1,161 @@
+<script>
+  /* ****************************************************** */
+  var SearchProject = function() {
+// если студент выбран, у него id не пустой
+// далее выполняем запрос для передаваемого id студента
+    var sStudentid = document.getElementById('floatstudentid').value;
+    var sProjectname = document.getElementById('projectname').value;
+    var sProjectdatestart = document.getElementById('projectdatestart').value;
+    var sProjectdateend = document.getElementById('projectdateend').value;
+    var sProjectfio = document.getElementById('projectfio').value;
+    var sProjectcity = document.getElementById('projectcity').value;
+    var sProjectorganization =
+            document.getElementById('projectorganization').value;
+    var sProjectcontacts = document.getElementById('projectcontacts').value;
+    var sProjectposition = document.getElementById('projectposition').value;
+// откроем модальное окно
+    $('#dwait').dialog('open');
+// создадим объект FormData
+    var formData = new FormData();
+// передадим значения полей на сервер
+    formData.append("studentid", sStudentid);
+    formData.append("projectname", sProjectname);
+    formData.append("projectdatestart", sProjectdatestart);
+    formData.append("projectdateend", sProjectdateend);
+    formData.append("projectfio", sProjectfio);
+    formData.append("projectcity", sProjectcity);
+    formData.append("projectorganization", sProjectorganization);
+    formData.append("projectcontacts", sProjectcontacts);
+    formData.append("projectposition", sProjectposition);
+// выполним асинхронный запрос POST
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/searchproject");
+    xhr.onload = function(e)
+    {
+      if(this.readyState == 4 && this.status == 200)
+      {
+        var sAux = this.response;
+        var aAux = sAux.split('####');
+// проверяем, если есть проблемы с входом в сессию,
+// если есть, переходим на страницу аутентификации
+        if(aAux[0] == "0") {
+          if(aAux[1] == '/') { window.location.href = '/logout'; }
+        }
+        $('#idserverresponse3').html(sAux);
+        $('#dwait').dialog('close');
+        return false;
+      }
+      else
+      {
+        alert("Err!");
+      }
+      return false;
+    };
+    xhr.send(formData);
+    return false;
+  };
+</script>
+<!-- определяем внешний вид окна id="dwait" -->
+<script>
+  $( function() {
+    $( "#dwait" ).dialog({
+      autoOpen: false,
+      resizable: false,
+      height: "auto",
+      width: 200,
+      modal: true,
+      closeText: "hide",
+      closeOnEscape: false
+    });
+  });
+</script>
+<!-- создадим форму содержащую поля ввода и кнопку Поиск -->
+<div class="container mt-3">
+  <form method="POST" enctype="multipart/form-data" style="margin-top:-15pt;">
+    <div class="form-row">
+      <div class="form-group col-md-3">
+        <label for="projectname">Название проекта</label>
+        <input type="text" class="form-control" id="projectname" onKeyUp="
+ projectname.value = projectname.value.trimLeft();
+ if(projectname.value.length < 3) { return false; }
+ SearchProject();
+ return false;
+ ">
+      </div>
+      <div class="form-group col-md-2">
+        <label for="projectdatestart">Дата с</label>
+        <input type="date" max="3000-12-31" min="1000-01-01" class="formcontrol" id="projectdatestart">
+      </div>
+      <div class="form-group col-md-2">
+        <label for="projectdateend">Дата по</label>
+        <input type="date" max="3000-12-31" min="1000-01-01" class="formcontrol" id="projectdateend">
+      </div>
+      <div class="form-group col-md-5">
+        <button class="btn btn-primary mb-2" style="margin-top:32px;float:right;"
+                onClick="SearchProject(); return false;">Поиск</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-3">
+        <label for="projectfio">Руководитель проекта</label>
+        <input type="text" class="form-control" id="projectfio" onKeyUp="
+ projectfio.value = projectfio.value.trimLeft();
+ if(projectfio.value.length < 3) { return false; }
+ SearchProject();
+ return false;
+ ">
+      </div>
+      <div class="form-group col-md-2">
+        <label for="projectcity">Город</label>
+        <select id="projectcity" class="form-control">
+        </select>
+      </div>
+      <div class="form-group col-md-3">
+        <label for="projectorganization">Название организации</label>
+        <input type="text" class="form-control" id="projectorganization" onKeyUp="
+ projectorganization.value = projectorganization.value.trimLeft();
+ if(projectorganization.value.length < 3) { return false; }
+ SearchProject();
+ return false;
+ ">
+      </div>
+      <div class="form-group col-md-3">
+        <label for="projectcontacts">Контакт</label>
+        <input type="text" class="form-control" id="projectcontacts" onKeyUp="
+ projectcontacts.value = projectcontacts.value.trimLeft();
+ if(projectcontacts.value.length < 3) { return false; }
+ SearchProject();
+ return false;
+ ">
+      </div>
+      <div class="form-group col-md-1">
+        <label for="projectposition">Должность</label>
+        <input type="text" class="form-control" id="projectposition" onKeyUp="
+ projectposition.value = projectposition.value.trimLeft();
+ if(projectposition.value.length < 3) { return false; }
+ SearchProject();
+ return false;
+ ">
+      </div>
+    </div>
+  </form>
+  <div id="idserverresponse3" style="width:100%;overflow-y:auto;margin-top:-5pt;border: 1px solid #dddddd;">
+  </div>
+</div>
+<script>
+  // устанавливаем адаптивную высоту окна
+  // в котором отображаются данные о проектах
+  document.getElementById('idserverresponse3').style.height =
+          (window.innerHeight-264)+'px';
+  document.getElementById('idserverresponse3').style.maxHeight =
+          (window.innerHeight-264)+'px';
+</script>
+<div id="dwait" title="Сообщение">
+  <p>Ждите...</p>
+</div>
+<script>
+  // удаляем кнопку окна "Сообщение", чтобы окно нельзя было закрыть
+  $("#dwait").dialog('widget').find(".ui-dialog-titlebar-close").hide();
+  // загрузка справочника списка городов
+  CityClassifier(1, 'projectcity');
+</script>

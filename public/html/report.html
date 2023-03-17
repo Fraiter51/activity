@@ -1,0 +1,155 @@
+<script>
+  /* ****************************************************** */
+  var SearchReport = function(sConfname, sProjectname,
+                              sPapername) {
+// откроем модальное окно
+    $('#dwait').dialog('open');
+    var sStudentid = document.getElementById('floatstudentid').value;
+// создадим объект FormData
+    var formData = new FormData();
+// передадим значение полей на сервер
+    formData.append("format", "HTML");
+    formData.append("studentid", sStudentid);
+    formData.append("confname", sConfname);
+    formData.append("projectname", sProjectname);
+    formData.append("papername", sPapername);
+// выполним асинхронный запрос POST
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/searchreport");
+    xhr.onload = function(e)
+    {
+      if(this.readyState == 4 && this.status == 200)
+      {
+        var sAux = this.response;
+        var aAux = sAux.split('####');
+// проверяем, если есть проблемы с входом в сессию,
+// если есть, переходим на страницу аутентификации
+        if(aAux[0] == "0") {
+          if(aAux[1] == '/') { window.location.href = '/logout'; }
+        }
+        $('#idserverresponse5').html(sAux);
+        $('#dwait').dialog('close');
+        return false;
+      }
+      else
+      {
+        alert("Err!");
+      }
+      return false;
+    };
+    xhr.send(formData);
+    return false;
+  };
+  /* ****************************************************** */
+  var SearchReportXLSXDOCX = function(sFormat, sConfname, sProjectname,
+                                      sPapername) {
+// XLSX DOCX
+    var sStudentid = document.getElementById('floatstudentid').value;
+    sConfname = sConfname.trim();
+    sProjectname = sProjectname.trim();
+    sPapername = sPapername.trim();
+// подгототавливаем и посылаем запрос методом GET
+    window.location.href =
+            '/searchreport?format='+ sFormat +
+            '&studentid='+ sStudentid +
+            '&confname='+ sConfname +
+            '&projectname='+ sProjectname +
+            '&papername='+ sPapername;
+    return false;
+  };
+</script>
+<!-- определяем внешний вид окна id="dwait" -->
+<script>
+  $( function() {
+    $( "#dwait" ).dialog({
+      autoOpen: false,
+      resizable: false,
+      height: "auto",
+      width: 200,
+      modal: true,
+      closeText: "hide",
+      closeOnEscape: false
+    });
+  });
+</script>
+<!-- создадим форму содержащую поля ввода и кнопки -->
+<div class="container mt-3">
+  <form method="POST" enctype="multipart/form-data" style="margin-top:-15pt;">
+    <div class="form-row">
+      <div class="form-group col-md-3">
+        <label for="confname">Название конференции</label>
+        <input type="text" class="form-control" id="confname" onKeyUp="
+ confname.value = confname.value.trimLeft();
+ if(confname.value.length < 3) { return false; }
+ SearchReport(confname.value, projectname.value, papername.value);
+ return false;
+ ">
+      </div>
+      <div class="form-group col-md-3">
+        <label for="projectname">Название проекта</label>
+        <input type="text" class="form-control" id="projectname" onKeyUp="
+ projectname.value = projectname.value.trimLeft();
+ if(projectname.value.length < 3) { return false; }
+ SearchReport(confname.value, projectname.value, papername.value);
+ return false;
+ ">
+      </div>
+      <div class="form-group col-md-3">
+        <label for="papername">Название статьи</label>
+        <input type="text" class="form-control" id="papername" onKeyUp="
+ papername.value = papername.value.trimLeft();
+ if(papername.value.length < 3) { return false; }
+ SearchReport(confname.value, projectname.value, papername.value);
+ return false;
+ ">
+      </div>
+      <div class="form-group col-md-3">
+        <label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Формат отчета</label>
+        <!-- xlsx docx -->
+        <table border=0 cellspacing=0 cellpadding=0 style="width:100%">
+          <tr>
+            <td> <!-- margin-top:32px; -->
+              <button class="btn btn-primary mb-2" style="float:right;" onClick="
+ SearchReportXLSXDOCX('XLSX', confname.value, projectname.value,
+papername.value);
+ return false;">xlsx</button>&nbsp;&nbsp;&nbsp;
+            </td>
+            <td>
+              &nbsp;
+            </td>
+            <td>
+              <button class="btn btn-primary mb-2" style="float:right;" onClick="
+ SearchReportXLSXDOCX('DOCX', confname.value, projectname.value,
+papername.value);
+ return false;">docx</button>&nbsp;&nbsp;&nbsp;
+            </td>
+            <td>
+              &nbsp;
+            </td>
+            <td style="width:*">
+              <button class="btn btn-primary mb-2" style="float:right;" onClick="
+ SearchReport(confname.value, projectname.value, papername.value);
+ return false;">Поиск</button>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </form>
+  <div id="idserverresponse5" style="width:100%;overflow-y:auto;margin-top:-5pt; border: 1px solid #dddddd; ">
+  </div>
+</div>
+<script>
+  // устанавливаем адаптивную высоту окна
+  document.getElementById('idserverresponse5').style.height =
+          (window.innerHeight-178)+'px';
+  document.getElementById('idserverresponse5').style.maxHeight =
+          (window.innerHeight-178)+'px';
+</script>
+<div id="dwait" title="Сообщение">
+  <p>Ждите...</p>
+</div>
+<script>
+  // удаляем кнопку окна "Сообщение", чтобы окно нельзя было закрыть
+  $("#dwait").dialog('widget').find(".ui-dialog-titlebar-close").hide();
+</script>

@@ -1,0 +1,126 @@
+<script>
+  /* ****************************************************** */
+  var ChartBasicBar = function(sActivityType) {
+// откроем модальное окно
+    $('#dwait').dialog('open');
+// если студент выбран, у него id не пустой
+    var sStudentid = document.getElementById('floatstudentid').value;
+// создадим объект FormData
+    var formData = new FormData();
+// передадим значение полей на сервер
+    formData.append("studentid", sStudentid);
+    formData.append("activitytype", sActivityType);
+// выполним асинхронный запрос POST
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/chartbasicbar");
+    xhr.onload = function(e)
+    {
+      if(this.readyState == 4 && this.status == 200)
+      {
+        var sAux = this.response;
+        var aAux = sAux.split('####');
+// проверяем, если есть проблемы с входом в сессию,
+// если есть, переходим на страницу аутентификации
+        if(aAux[0] == "0") {
+          if(aAux[1] == '/') { window.location.href = '/logout'; }
+        }
+        $('#dwait').dialog('close');
+        var aAux = JSON.parse(sAux);
+// объявим массивы для хранения координат по осям X и Y
+        var aX=[];
+        var aY=[];
+// для ФИО заменяем пробел на пробел и переход на новую строку
+        for (x in aAux) {
+          aX.push(x.replaceAll(' ', ' \n'));
+          aY.push(aAux[x]);
+        }
+// устанавливаем начальные значения графика
+        var chartDom = document.getElementById('chart1');
+        var myChart = echarts.init(chartDom);
+        var option;
+        option = {
+          xAxis: {
+            axisLabel: {
+// расположим ФИО под углом 45 градусов
+              rotate: 45,
+            },
+            type: 'category',
+            data: aX
+          },
+          yAxis: {
+            type: 'value'
+          },
+          series: [{
+            data: aY,
+            type: 'bar'
+          }]
+        };
+        option && myChart.setOption(option);
+        return false;
+      }
+      else
+      {
+        alert("Err!");
+      }
+      return false;
+    };
+    xhr.send(formData);
+    return false;
+  };
+</script>
+<!-- определяем внешний вид окна id="dwait" -->
+<script>
+  $( function() {
+    $( "#dwait" ).dialog({
+      autoOpen: false,
+      resizable: false,
+      height: "auto",
+      width: 200,
+      modal: true,
+      closeText: "hide",
+      closeOnEscape: false
+    });
+  });
+</script>
+<!-- создадим форму содержащую поля ввода и кнопку Поиск -->
+<div class="container mt-3">
+  <form method="POST" enctype="multipart/form-data" style="margin-top:-15pt;">
+    <div class="form-row">
+      <div class="form-group col-md-3">
+        <label for="activitytype">Тип активности для графика</label>
+        <select id="activitytype" class="form-control" onChange="
+ ChartBasicBar(activitytype.value);
+ return false;
+ ">
+          <option value="">Все</option>
+          <option value="1">Конференции</option>
+          <option value="2">Проекты</option>
+          <option value="3">Статьи</option>
+        </select>
+      </div>
+      <div class="form-group col-md-9">
+        <button class="btn btn-primary mb-2" style="margin-top:32px;float:right;"
+                onClick="
+ChartBasicBar(activitytype.value); return false;">Поиск</button>
+      </div>
+    </div>
+  </form>
+  <div id="idserverresponse6" style="width:100%;overflow-y:auto;margin-top:-5pt; border: 1px solid #dddddd; "> <!-- border: 1px solid #dddddd; -->
+    <div id="chart1" style="width:600px;height:400px;"></div>
+  </div>
+</div>
+<script>
+  // устанавливаем адаптивную высоту окна
+  // в котором отображаются графики
+  document.getElementById('idserverresponse6').style.height =
+          (window.innerHeight-178)+'px';
+  document.getElementById('idserverresponse6').style.maxHeight =
+          (window.innerHeight-178)+'px';
+</script>
+<div id="dwait" title="Сообщение">
+  <p>Ждите...</p>
+</div>
+<script>
+  // удаляем кнопку окна "Сообщение", чтобы окно нельзя было закрыть
+  $("#dwait").dialog('widget').find(".ui-dialog-titlebar-close").hide();
+</script>
